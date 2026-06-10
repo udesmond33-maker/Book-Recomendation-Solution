@@ -12,7 +12,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="Book Recommender",
+    page_title="Book Maestro",
     page_icon="📚",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -243,13 +243,30 @@ section[data-testid="stSidebar"] { display: none; }
     box-shadow: 0 0 0 3px rgba(26,58,92,0.1) !important;
 }
 
-/* ── Dropdowns ── */
-[data-baseweb="select"] > div {
-    border: 1.5px solid #E5E5EA !important;
+/* ── Dropdowns — dark background, white text ── */
+[data-baseweb="select"] div {
+    background-color: #1A3A5C !important;
+    color: #FFFFFF !important;
     border-radius: 6px !important;
     font-size: 0.9rem !important;
-    color: #111111 !important;
-    background: #FFFFFF !important;
+}
+[data-baseweb="select"] span { color: #FFFFFF !important; }
+[data-baseweb="select"] svg  { fill: #FFFFFF !important; }
+[data-baseweb="popover"] li {
+    background-color: #1A3A5C !important;
+    color: #FFFFFF !important;
+}
+[data-baseweb="popover"] li:hover {
+    background-color: #C9923A !important;
+    color: #FFFFFF !important;
+}
+[data-baseweb="menu"] { background-color: #1A3A5C !important; }
+[data-baseweb="menu"] [role="option"] {
+    color: #FFFFFF !important;
+    background-color: #1A3A5C !important;
+}
+[data-baseweb="menu"] [role="option"]:hover {
+    background-color: #C9923A !important;
 }
 
 /* Force all text visible */
@@ -264,7 +281,7 @@ p, h1, h2, h3, h4, h5, label, span, div { color: #111111; }
 st.markdown("""
 <div class="br-header">
   <div>
-    <div class="br-logo">book<span>rec</span></div>
+    <div class="br-logo">Book <span>Maestro</span></div>
     <div class="br-tagline">AI-powered book recommendations · TF-IDF + K-Means Clustering</div>
   </div>
   <div class="br-badge">Desmond Ugboaja &nbsp;·&nbsp; Ironhack Analytics 2026</div>
@@ -366,7 +383,7 @@ with tab1:
     with col_n:
         n_recs = st.slider("Results", 3, 10, 5, key="s1")
     with col_btn:
-        st.write("")
+        st.markdown("<div style='margin-top:1.85rem'></div>", unsafe_allow_html=True)
         search = st.button("Search", key="btn_search")
 
     if search and query:
