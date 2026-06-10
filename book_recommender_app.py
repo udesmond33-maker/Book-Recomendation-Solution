@@ -230,17 +230,24 @@ section[data-testid="stSidebar"] { display: none; }
     white-space: nowrap;
 }
 
-/* ── Text input ── */
+/* ── Text input — dark background, white text ── */
 .stTextInput input {
-    border: 1.5px solid #E5E5EA !important;
+    background-color: #1A3A5C !important;
+    border: 1.5px solid #1A3A5C !important;
     border-radius: 6px !important;
     font-size: 0.95rem !important;
     font-family: 'Inter', sans-serif !important;
-    color: #111111 !important;
+    color: #FFFFFF !important;
+    padding: 0.6rem 1rem !important;
+}
+.stTextInput input::placeholder {
+    color: #8BAAC7 !important;
+    opacity: 1 !important;
 }
 .stTextInput input:focus {
-    border-color: #1A3A5C !important;
-    box-shadow: 0 0 0 3px rgba(26,58,92,0.1) !important;
+    border-color: #C9923A !important;
+    box-shadow: 0 0 0 3px rgba(201,146,58,0.25) !important;
+    outline: none !important;
 }
 
 /* ── Dropdowns — dark background, white text ── */
@@ -331,7 +338,7 @@ def get_recommendations(book_idx, n=5):
 def render_card(row, show_match=True):
     rating = f"⭐ {row['avg_rating']:.2f}  ·  " if pd.notna(row.get('avg_rating')) else ""
     match_html = f'<span class="match-pill">{row["match_pct"]}% match</span>' if show_match and 'match_pct' in row else ''
-    genre_html = f'<span class="genre-pill">{row["genre"]}</span>'
+    genre_html = f'<span class="genre-pill">{row["genre"]}</span>' if show_match else ''
     st.markdown(f"""
     <div class="book-card">
       <div class="card-left">
