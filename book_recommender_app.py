@@ -1,6 +1,5 @@
 """
-Book Recommender — Redesigned UI
-Clean, minimal, professional
+Book Recommender — Redesigned to match Trivago app style
 Desmond Ugboaja · Ironhack Data Analytics 2026
 """
 
@@ -15,112 +14,148 @@ from sklearn.metrics.pairwise import cosine_similarity
 st.set_page_config(
     page_title="Book Recommender",
     page_icon="📚",
-    layout="centered"
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
-# ── CSS ───────────────────────────────────────────────────────────────────────
+# ── Global style ──────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-html, body, [class*="css"] {
-    font-family: 'Inter', sans-serif;
-    background: #FFFFFF;
-    color: #1C1C1E;
+html, body, [class*="css"], .stApp {
+    font-family: 'Inter', sans-serif !important;
+    background-color: #FFFFFF !important;
+    color: #111111 !important;
 }
 #MainMenu, footer, header { visibility: hidden; }
-.block-container {
-    padding: 3rem 2rem 4rem 2rem;
-    max-width: 720px;
-}
+.block-container { padding: 2rem 3rem; max-width: 1200px; }
+body { background-color: #FFFFFF !important; }
+.stApp { background-color: #FFFFFF !important; }
+section[data-testid="stSidebar"] { display: none; }
 
 /* ── Header ── */
-.page-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 2rem;
-    color: #1C1C1E;
-    margin: 0 0 4px 0;
-    letter-spacing: -0.3px;
+.br-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 0 1rem 0;
+    border-bottom: 2px solid #1A3A5C;
+    margin-bottom: 2rem;
 }
-.page-sub {
-    font-size: 0.85rem;
-    color: #8E8E93;
-    margin: 0 0 2.5rem 0;
+.br-logo {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -1px;
+    color: #1A3A5C;
+    font-family: 'Inter', sans-serif;
+}
+.br-logo span { color: #C9923A; }
+.br-tagline {
+    font-size: 0.82rem;
+    color: #666666;
+    margin-top: 2px;
     font-weight: 400;
 }
-.divider {
-    border: none;
-    border-top: 1px solid #E5E5EA;
-    margin: 2rem 0;
+.br-badge {
+    background: #1A3A5C;
+    color: #FFFFFF;
+    font-size: 0.78rem;
+    font-weight: 500;
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+}
+
+/* ── Metric cards ── */
+.metric-card {
+    background: #FAFAFA;
+    border-radius: 8px;
+    padding: 1.2rem 1.4rem;
+    border: 1px solid #E5E5E5;
+    border-left: 4px solid #C9923A;
+    margin-bottom: 1rem;
+}
+.metric-value {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: #1A3A5C;
+    margin: 0;
+    line-height: 1.1;
+}
+.metric-label {
+    font-size: 0.72rem;
+    color: #777777;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin: 0.3rem 0 0 0;
+    font-weight: 600;
+}
+
+/* ── Section titles ── */
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #111111;
+    margin: 1.5rem 0 0.8rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #F0F0F0;
+}
+
+/* ── Insight box ── */
+.insight-box {
+    background: #F5F7FF;
+    border-left: 4px solid #1A3A5C;
+    border-radius: 0 6px 6px 0;
+    padding: 0.9rem 1.2rem;
+    margin: 1rem 0;
+    font-size: 0.88rem;
+    color: #111111;
+    line-height: 1.65;
 }
 
 /* ── Tabs ── */
 .stTabs [data-baseweb="tab-list"] {
     gap: 0;
-    border-bottom: 2px solid #E5E5EA;
-    background: transparent;
-    padding: 0;
-    margin-bottom: 2rem;
+    background: #F5F5F5;
+    border-radius: 8px;
+    padding: 4px;
+    border: 1px solid #E5E5E5;
+    margin-bottom: 1.5rem;
 }
 .stTabs [data-baseweb="tab"] {
-    background: transparent;
-    border: none;
-    border-bottom: 2px solid transparent;
-    border-radius: 0;
-    padding: 0.6rem 1.5rem 0.6rem 0;
-    margin-bottom: -2px;
-    font-size: 0.9rem;
+    border-radius: 6px;
+    padding: 0.45rem 1.2rem;
+    font-size: 0.85rem;
     font-weight: 500;
-    color: #8E8E93;
+    color: #444444 !important;
+    background: transparent;
 }
 .stTabs [aria-selected="true"] {
-    background: transparent !important;
-    border-bottom: 2px solid #C9923A !important;
-    color: #1C1C1E !important;
+    background: #1A3A5C !important;
+    color: #FFFFFF !important;
 }
 
-/* ── Search input ── */
-.stTextInput input {
-    border: 1.5px solid #E5E5EA !important;
-    border-radius: 10px !important;
-    padding: 0.7rem 1rem !important;
-    font-size: 0.95rem !important;
-    font-family: 'Inter', sans-serif !important;
-    background: #FAFAFA !important;
-    color: #1C1C1E !important;
-    box-shadow: none !important;
-}
-.stTextInput input:focus {
-    border-color: #C9923A !important;
-    background: #FFFFFF !important;
-    box-shadow: 0 0 0 3px rgba(201,146,58,0.12) !important;
-}
-
-/* ── Button ── */
+/* ── Buttons ── */
 .stButton > button {
-    background: #1C1C1E !important;
+    background: #1A3A5C !important;
     color: #FFFFFF !important;
     border: none !important;
-    border-radius: 10px !important;
-    padding: 0.65rem 1.8rem !important;
-    font-size: 0.88rem !important;
+    border-radius: 6px !important;
+    padding: 0.5rem 1.2rem !important;
     font-weight: 500 !important;
-    font-family: 'Inter', sans-serif !important;
-    letter-spacing: 0.2px !important;
+    font-size: 0.87rem !important;
     width: 100% !important;
-    transition: opacity 0.15s !important;
 }
-.stButton > button:hover {
-    opacity: 0.85 !important;
-}
+.stButton > button:hover { background: #0f2540 !important; }
 
 /* ── Selected book banner ── */
 .selected-banner {
-    background: #FAF8F5;
-    border: 1px solid #E5E5EA;
-    border-radius: 12px;
+    background: #F0F4FA;
+    border: 1px solid #D0D9E8;
+    border-left: 4px solid #C9923A;
+    border-radius: 0 8px 8px 0;
     padding: 1.2rem 1.4rem;
-    margin-bottom: 1.8rem;
+    margin-bottom: 1.5rem;
 }
 .selected-label {
     font-size: 0.7rem;
@@ -131,9 +166,9 @@ html, body, [class*="css"] {
     margin: 0 0 6px 0;
 }
 .selected-title {
-    font-family: 'Playfair Display', serif;
     font-size: 1.15rem;
-    color: #1C1C1E;
+    font-weight: 700;
+    color: #1A3A5C;
     margin: 0 0 2px 0;
 }
 .selected-author {
@@ -141,53 +176,49 @@ html, body, [class*="css"] {
     color: #636366;
     margin: 0 0 6px 0;
 }
-.selected-meta {
-    font-size: 0.78rem;
-    color: #AEAEB2;
-}
+.selected-meta { font-size: 0.78rem; color: #AEAEB2; }
 
-/* ── Book card ── */
+/* ── Book cards ── */
 .book-card {
-    background: #FAF8F5;
-    border: 1px solid #E5E5EA;
-    border-radius: 12px;
-    padding: 1.1rem 1.4rem;
-    margin-bottom: 0.75rem;
-    transition: border-color 0.15s;
-}
-.book-card:hover { border-color: #C9923A; }
-.card-top {
+    background: #FAFAFA;
+    border-radius: 8px;
+    padding: 1rem 1.3rem;
+    border: 1px solid #E5E5E5;
+    border-left: 4px solid #1A3A5C;
+    margin-bottom: 0.6rem;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
 }
+.card-left { flex: 1; }
 .card-title {
     font-size: 0.95rem;
     font-weight: 600;
-    color: #1C1C1E;
+    color: #111111;
     margin: 0 0 3px 0;
-    line-height: 1.35;
 }
 .card-author {
     font-size: 0.82rem;
     color: #636366;
-    margin: 0;
+    margin: 0 0 4px 0;
 }
-.card-meta {
-    font-size: 0.76rem;
-    color: #AEAEB2;
-    margin: 6px 0 0 0;
+.card-meta { font-size: 0.76rem; color: #AEAEB2; margin: 0; }
+.card-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    margin-left: 12px;
+    flex-shrink: 0;
 }
 .match-pill {
-    background: #1C1C1E;
+    background: #1A3A5C;
     color: #FFFFFF;
     font-size: 0.7rem;
     font-weight: 600;
     padding: 3px 9px;
     border-radius: 20px;
     white-space: nowrap;
-    margin-left: 10px;
-    flex-shrink: 0;
 }
 .genre-pill {
     background: #FFF3E0;
@@ -196,72 +227,48 @@ html, body, [class*="css"] {
     font-weight: 600;
     padding: 3px 9px;
     border-radius: 20px;
-    margin-left: 6px;
-    flex-shrink: 0;
+    white-space: nowrap;
 }
 
-/* ── Insight box ── */
-.insight {
-    background: #FFF8F0;
-    border: 1px solid #FDDCB0;
-    border-radius: 10px;
-    padding: 1rem 1.2rem;
-    font-size: 0.83rem;
-    color: #636366;
-    margin-top: 1.5rem;
-    line-height: 1.6;
-}
-.insight b { color: #1C1C1E; }
-
-/* ── Section heading ── */
-.section-heading {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #1C1C1E;
-    margin: 0 0 1rem 0;
-}
-
-/* ── Selectbox ── */
-.stSelectbox [data-baseweb="select"] > div {
+/* ── Text input ── */
+.stTextInput input {
     border: 1.5px solid #E5E5EA !important;
-    border-radius: 10px !important;
-    background: #FAFAFA !important;
+    border-radius: 6px !important;
+    font-size: 0.95rem !important;
+    font-family: 'Inter', sans-serif !important;
+    color: #111111 !important;
+}
+.stTextInput input:focus {
+    border-color: #1A3A5C !important;
+    box-shadow: 0 0 0 3px rgba(26,58,92,0.1) !important;
+}
+
+/* ── Dropdowns ── */
+[data-baseweb="select"] > div {
+    border: 1.5px solid #E5E5EA !important;
+    border-radius: 6px !important;
     font-size: 0.9rem !important;
+    color: #111111 !important;
+    background: #FFFFFF !important;
 }
 
-/* ── Slider ── */
-.stSlider [data-baseweb="slider"] { padding: 0.5rem 0; }
-
-/* ── Stats ── */
-.stats-row {
-    display: flex;
-    gap: 2rem;
-    margin-top: 1rem;
-}
-.stat-item { text-align: center; }
-.stat-value {
-    font-size: 1.4rem;
-    font-weight: 600;
-    color: #1C1C1E;
-    display: block;
-}
-.stat-label {
-    font-size: 0.75rem;
-    color: #AEAEB2;
-    font-weight: 400;
-}
-.footer-text {
-    font-size: 0.75rem;
-    color: #C7C7CC;
-    margin-top: 0.5rem;
-}
+/* Force all text visible */
+p, h1, h2, h3, h4, h5, label, span, div { color: #111111; }
+.stMarkdown p { color: #111111 !important; }
+.stSelectbox label, .stSlider label, .stRadio label { color: #111111 !important; }
+[data-testid="stMarkdownContainer"] p { color: #111111 !important; }
 </style>
 """, unsafe_allow_html=True)
 
 # ── Header ────────────────────────────────────────────────────────────────────
 st.markdown("""
-<p class="page-title">📚 Book Recommender</p>
-<p class="page-sub">Find your next read · TF-IDF + K-Means · Ironhack 2026</p>
+<div class="br-header">
+  <div>
+    <div class="br-logo">book<span>rec</span></div>
+    <div class="br-tagline">AI-powered book recommendations · TF-IDF + K-Means Clustering</div>
+  </div>
+  <div class="br-badge">Desmond Ugboaja &nbsp;·&nbsp; Ironhack Analytics 2026</div>
+</div>
 """, unsafe_allow_html=True)
 
 # ── Load models ───────────────────────────────────────────────────────────────
@@ -286,7 +293,7 @@ def load_data():
         st.error("clustered_books.csv not found.")
         st.stop()
 
-with st.spinner("Loading…"):
+with st.spinner("Loading models…"):
     tfidf, kmeans, tfidf_matrix = load_models()
     df = load_data()
 
@@ -310,28 +317,54 @@ def render_card(row, show_match=True):
     genre_html = f'<span class="genre-pill">{row["genre"]}</span>'
     st.markdown(f"""
     <div class="book-card">
-      <div class="card-top">
+      <div class="card-left">
         <p class="card-title">{row['title']}</p>
-        <div style="display:flex;align-items:center;margin-top:2px">{match_html}{genre_html}</div>
+        <p class="card-author">by {row['authors']}</p>
+        <p class="card-meta">{rating}Cluster {int(row['cluster'])}</p>
       </div>
-      <p class="card-author">by {row['authors']}</p>
-      <p class="card-meta">{rating}Cluster {int(row['cluster'])}</p>
+      <div class="card-right">
+        {match_html}
+        {genre_html}
+      </div>
     </div>
     """, unsafe_allow_html=True)
 
-# ── Tabs ──────────────────────────────────────────────────────────────────────
-tab1, tab2 = st.tabs(["Search by title", "Browse by genre"])
+# ── Stats row ─────────────────────────────────────────────────────────────────
+exclude = {'mixed', 'default', 'add a comment', 'unknown'}
+genre_counts = df[~df['genre'].str.lower().isin(exclude)]['genre'].value_counts()
 
-# ── TAB 1: Search ─────────────────────────────────────────────────────────────
+c1, c2, c3, c4 = st.columns(4)
+for col, val, lbl in [
+    (c1, f"{len(df):,}",                  "Books in dataset"),
+    (c2, f"{df['authors'].nunique():,}",  "Unique authors"),
+    (c3, f"{df['cluster'].nunique()}",    "Content clusters"),
+    (c4, f"{len(genre_counts)}",          "Genres covered"),
+]:
+    col.markdown(f"""
+    <div class="metric-card">
+      <p class="metric-value">{val}</p>
+      <p class="metric-label">{lbl}</p>
+    </div>""", unsafe_allow_html=True)
+
+# ── Tabs ──────────────────────────────────────────────────────────────────────
+tab1, tab2 = st.tabs(["  🔍  Search by Title  ", "  📖  Browse by Genre  "])
+
+# ═══════════════════════════════════════════════════════════════════════
+# TAB 1 — SEARCH BY TITLE
+# ═══════════════════════════════════════════════════════════════════════
 with tab1:
-    query = st.text_input(
-        "title_search",
-        placeholder="Type a book title — e.g. Born a Crime, Sharp Objects…",
-        label_visibility="collapsed"
-    )
-    col_n, col_btn = st.columns([3, 1])
+    st.markdown('<p class="section-title">Find books similar to one you love</p>',
+                unsafe_allow_html=True)
+
+    col_input, col_n, col_btn = st.columns([3, 1.5, 1])
+    with col_input:
+        query = st.text_input(
+            "title",
+            placeholder="Type a title — e.g. Born a Crime, Sharp Objects, The Alchemist…",
+            label_visibility="collapsed"
+        )
     with col_n:
-        n_recs = st.slider("Recommendations", 3, 10, 5, key="s1")
+        n_recs = st.slider("Results", 3, 10, 5, key="s1")
     with col_btn:
         st.write("")
         search = st.button("Search", key="btn_search")
@@ -343,10 +376,7 @@ with tab1:
             st.warning(f"No titles found matching **'{query}'**. Try a single keyword.")
         else:
             if len(matches) > 1:
-                chosen = st.selectbox(
-                    f"{len(matches)} matches — pick one:",
-                    matches['title'].tolist()
-                )
+                chosen   = st.selectbox(f"{len(matches)} matches — pick one:", matches['title'].tolist())
                 book     = df[df['title'] == chosen].iloc[0]
                 book_idx = df[df['title'] == chosen].index[0]
             else:
@@ -363,32 +393,35 @@ with tab1:
             </div>
             """, unsafe_allow_html=True)
 
-            st.markdown('<p class="section-heading">You might also enjoy</p>', unsafe_allow_html=True)
+            st.markdown('<p class="section-title">You might also enjoy</p>', unsafe_allow_html=True)
             recs = get_recommendations(book_idx, n=n_recs)
             for _, row in recs.iterrows():
                 render_card(row, show_match=True)
 
-            top = recs.iloc[0]
+            top          = recs.iloc[0]
             cluster_size = (df['cluster'] == book['cluster']).sum()
             st.markdown(f"""
-            <div class="insight">
-            <b>{book['title']}</b> belongs to Cluster {int(book['cluster'])} — a group of
-            <b>{cluster_size:,} books</b> with similar themes and vocabulary.
+            <div class="insight-box">
+            <b>Why these books?</b> &nbsp;<b>{book['title']}</b> belongs to Cluster {int(book['cluster'])}
+            — a group of <b>{cluster_size:,} books</b> with similar themes and vocabulary.
             Recommendations are ranked by cosine similarity within that cluster.
             Top match: <b>{top['title']}</b> at {top['match_pct']}% similarity.
             </div>
             """, unsafe_allow_html=True)
 
-# ── TAB 2: Browse ─────────────────────────────────────────────────────────────
+    elif search and not query:
+        st.info("Enter a title above and hit Search.")
+
+# ═══════════════════════════════════════════════════════════════════════
+# TAB 2 — BROWSE BY GENRE
+# ═══════════════════════════════════════════════════════════════════════
 with tab2:
-    exclude = {'mixed', 'default', 'add a comment', 'unknown'}
-    genre_counts = (
-        df[~df['genre'].str.lower().isin(exclude)]['genre']
-        .value_counts()
-    )
+    st.markdown('<p class="section-title">Browse top-rated books by genre</p>',
+                unsafe_allow_html=True)
+
     genre_list = genre_counts.index.tolist()
 
-    col_g, col_s = st.columns([3, 2])
+    col_g, col_s, col_n2 = st.columns([2.5, 1.5, 1])
     with col_g:
         selected_genre = st.selectbox(
             "Genre",
@@ -397,8 +430,8 @@ with tab2:
         )
     with col_s:
         sort_by = st.selectbox("Sort by", ["Highest rated", "Most rated", "Title A–Z"])
-
-    n_browse = st.slider("Books to show", 5, 20, 10, key="s2")
+    with col_n2:
+        n_browse = st.slider("Show", 5, 20, 10, key="s2")
 
     if selected_genre:
         gdf = df[df['genre'] == selected_genre].copy()
@@ -409,27 +442,21 @@ with tab2:
         else:
             gdf = gdf.sort_values('title').head(n_browse)
 
-        st.markdown(f'<p class="section-heading">Top {len(gdf)} in {selected_genre}</p>', unsafe_allow_html=True)
+        st.markdown(f'<p class="section-title">Top {len(gdf)} books in {selected_genre}</p>',
+                    unsafe_allow_html=True)
 
         if gdf.empty:
-            st.info("No rated books found here. Try sorting by Title A–Z.")
+            st.info("No rated books found. Try sorting by Title A–Z.")
         else:
             for _, row in gdf.iterrows():
                 render_card(row, show_match=False)
 
             st.markdown(f"""
-            <div class="insight">
+            <div class="insight-box">
             <b>{selected_genre}</b> contains <b>{genre_counts.get(selected_genre, 0):,} books</b>
-            in this dataset. Switch to the Search tab and enter any title above to get
-            content-based recommendations from within its cluster.
+            in this dataset. Switch to the <b>Search by Title</b> tab and enter any title
+            above to get content-based recommendations from within its cluster.
             </div>
             """, unsafe_allow_html=True)
 
-# ── Footer stats ──────────────────────────────────────────────────────────────
-st.markdown('<hr class="divider">', unsafe_allow_html=True)
-c1, c2, c3, c4 = st.columns(4)
-c1.metric("Books",    f"{len(df):,}")
-c2.metric("Authors",  f"{df['authors'].nunique():,}")
-c3.metric("Clusters", f"{df['cluster'].nunique()}")
-c4.metric("Genres",   f"{len(genre_list)}")
-st.markdown('<p class="footer-text">Desmond Ugboaja · Ironhack Data Analytics 2026 · TF-IDF + K-Means + Cosine Similarity</p>', unsafe_allow_html=True)
+st.caption("Book Recommender · Desmond Ugboaja · Ironhack Data Analytics 2026 · TF-IDF + K-Means + Cosine Similarity")
